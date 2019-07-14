@@ -1,0 +1,5 @@
+# Dependencies
+/node_modules
+
+# Sample report
+/sample-report.csv
