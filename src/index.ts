@@ -40,52 +40,12 @@
 
 import fs from 'fs';
 import path from 'path'
-import readline from 'readline';
 import { promisify } from 'util';
 
-import CSVStringify, { Stringifier } from 'csv-stringify';
+import { robotsToCSVPromise } from './robots-to-csv-promise';
+import { CSVStream } from './csv-stream';
 
 const readdirPromise = promisify(fs.readdir);
-
-/**
- * Promise to write each line from a robots.txt file to the common CSV stream.
- */
-const robotsToCSVPromise = (domain: string, robotsFilepath: string, csv: Stringifier): Promise<void> => {
-  // Increment lineNumber with each 'line' event
-  let lineNumber = 0;
-
-  // Create an input stream to access the robots.txt file data
-  const input = fs.createReadStream(robotsFilepath, { encoding: 'utf8' });
-
-  // Handle the streams async
-  const promise = new Promise<void>((resolve, reject) => {
-    const rl = readline.createInterface({ input, crlfDelay: Infinity });
-
-    // For every line read, increment the line counter and write data to the CSV stream
-    rl.on('line', (lineData) => {
-      lineNumber = lineNumber += 1;
-      csv.write({ domain, lineNumber, lineData });
-    });
-
-    // Resolve / Reject
-    rl.on('close', resolve);
-    csv.on('error', (error) => reject(error));
-  });
-
-  return promise;
-}
-
-/**
- * The common CSV stream object.
- */
-const CSVStream = CSVStringify({
-  header: true,
-  columns: [
-    { key: 'domain' },
-    { key: 'lineNumber', header: 'line number' },
-    { key: 'lineData', header: 'line data' },
-  ],
-});
 
 // input/output paths
 const domainsDir = path.join(__dirname, '..', 'sample');
